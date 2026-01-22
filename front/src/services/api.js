@@ -36,3 +36,53 @@ export const commentAPI = {
 export const dashboardAPI = {
   getStats: () => api.get('/dashboard')
 };
+
+export const authAPI = {
+  signup: (data) => api.post('/auth/signup', data),
+  login: (data) => api.post('/auth/login', data),
+  refresh: (data) => api.post('/auth/refresh', data),
+  logout: (data) => api.post('/auth/logout', data),
+  getLoggedInUsers: () => api.get('/auth/logged-in'),
+  getAllAuthUsers: () => api.get('/auth/all'),
+  changePassword: (data) => api.post('/auth/change-password', data),
+  updateAuthUser: (userId, data) => api.put(`/auth/user/${userId}`, data)
+};
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          const response = await authAPI.refresh({ refreshToken });
+          localStorage.setItem('accessToken', response.data.accessToken);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+          originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+          return api(originalRequest);
+        } catch (err) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/';
+          return Promise.reject(err);
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);

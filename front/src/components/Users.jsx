@@ -9,6 +9,7 @@ function Users() {
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '' });
+  const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     loadUsers();
@@ -65,6 +66,11 @@ function Users() {
     } catch (error) {
       console.error('Error toggling status:', error);
     }
+  };
+
+  const isOwnRecord = (userId) => {
+    if (!loggedInUser) return false;
+    return String(loggedInUser.id) === String(userId);
   };
 
   return (
@@ -137,10 +143,16 @@ function Users() {
               <td>{new Date(user.createdAt).toLocaleDateString()}</td>
               <td>
                 <button onClick={() => handleEdit(user)} className="btn-edit">Edit</button>
-                <button onClick={() => handleToggleStatus(user._id)} className="btn-toggle">
-                  {user.isActive ? 'Deactivate' : 'Activate'}
-                </button>
-                <button onClick={() => handleDelete(user._id)} className="btn-delete">Delete</button>
+                {!isOwnRecord(user._id) && (
+                  <>
+                    <button onClick={() => handleToggleStatus(user._id)} className="btn-toggle">
+                      {user.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                    {!user.isActive && (
+                      <button onClick={() => handleDelete(user._id)} className="btn-delete">Delete</button>
+                    )}
+                  </>
+                )}
               </td>
             </tr>
           ))}

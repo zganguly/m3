@@ -180,7 +180,10 @@ function Posts() {
                 <button onClick={() => handleToggleStatus(post._id)} className="btn-toggle">
                   {post.isActive ? 'Deactivate' : 'Activate'}
                 </button>
+                {!post.isActive ? 
                 <button onClick={() => handleDelete(post._id)} className="btn-delete">Delete</button>
+                : 
+                (null)}
               </td>
             </tr>
           ))}
