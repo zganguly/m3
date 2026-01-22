@@ -9,7 +9,12 @@ const generateSlug = (title) => {
 export const createPost = async (req, res) => {
   try {
     const slug = req.body.slug || generateSlug(req.body.title);
-    const postData = { ...req.body, slug };
+    const postData = {
+      ...req.body,
+      slug,
+      createdBy: req.authUser?.id || null,
+      createdByName: req.authUser?.name || null
+    };
     const post = new Post(postData);
     await post.save();
     await post.populate('author', 'name email');

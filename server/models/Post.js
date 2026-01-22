@@ -25,6 +25,14 @@ const postSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  createdBy: {
+    type: String,
+    default: null
+  },
+  createdByName: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true

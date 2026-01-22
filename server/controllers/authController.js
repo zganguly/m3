@@ -153,7 +153,7 @@ export const getLoggedInUsers = async (req, res) => {
 export const getAllAuthUsers = async (req, res) => {
   try {
     const authUsers = await AuthUser.find()
-      .select('name email createdAt isLoggedIn')
+      .select('name email createdAt refreshToken')
       .sort({ createdAt: -1 });
     
     const usersWithStatus = authUsers.map(user => ({

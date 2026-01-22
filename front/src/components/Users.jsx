@@ -126,6 +126,7 @@ function Users() {
             <th>Name</th>
             <th>Email</th>
             <th>Status</th>
+            <th>Created By</th>
             <th>Created</th>
             <th>Actions</th>
           </tr>
@@ -140,11 +141,12 @@ function Users() {
                   {user.isActive ? 'Active' : 'Inactive'}
                 </span>
               </td>
+              <td>{user.createdByName || 'N/A'}</td>
               <td>{new Date(user.createdAt).toLocaleDateString()}</td>
               <td>
+                {isOwnRecord(user.createdBy) && (
+                <>
                 <button onClick={() => handleEdit(user)} className="btn-edit">Edit</button>
-                {!isOwnRecord(user._id) && (
-                  <>
                     <button onClick={() => handleToggleStatus(user._id)} className="btn-toggle">
                       {user.isActive ? 'Deactivate' : 'Activate'}
                     </button>

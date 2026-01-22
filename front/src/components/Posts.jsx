@@ -11,6 +11,7 @@ function Posts() {
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [formData, setFormData] = useState({ title: '', slug: '', content: '', author: '' });
+  const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     loadPosts();
@@ -82,6 +83,11 @@ function Posts() {
     } catch (error) {
       console.error('Error toggling status:', error);
     }
+  };
+
+  const isOwnRecord = (userId) => {
+    if (!loggedInUser) return false;
+    return String(loggedInUser.id) === String(userId);
   };
 
   return (
@@ -159,6 +165,7 @@ function Posts() {
             <th>Slug</th>
             <th>Author</th>
             <th>Status</th>
+            <th>Created By</th>
             <th>Created</th>
             <th>Actions</th>
           </tr>
@@ -174,16 +181,21 @@ function Posts() {
                   {post.isActive ? 'Active' : 'Inactive'}
                 </span>
               </td>
+              <td>{post.createdByName || 'N/A'}</td>
               <td>{new Date(post.createdAt).toLocaleDateString()}</td>
               <td>
+                {isOwnRecord(post.createdBy) && (
+                <>
                 <button onClick={() => handleEdit(post)} className="btn-edit">Edit</button>
                 <button onClick={() => handleToggleStatus(post._id)} className="btn-toggle">
                   {post.isActive ? 'Deactivate' : 'Activate'}
                 </button>
                 {!post.isActive ? 
                 <button onClick={() => handleDelete(post._id)} className="btn-delete">Delete</button>
-                : 
+                :
                 (null)}
+                </>
+                )}
               </td>
             </tr>
           ))}

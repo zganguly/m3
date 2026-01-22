@@ -8,10 +8,11 @@ import {
   togglePostStatus,
   getAllActivePosts
 } from '../controllers/postController.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', createPost);
+router.post('/', authenticateToken, createPost);
 router.get('/allActive', getAllActivePosts);
 router.get('/', getPosts);
 router.get('/:id', getPostById);
