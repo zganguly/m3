@@ -11,6 +11,8 @@ function Posts() {
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [formData, setFormData] = useState({ title: '', slug: '', content: '', author: '' });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const loggedInUser = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
@@ -37,20 +39,57 @@ function Posts() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only PNG, JPG and JPEG images are allowed');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!editingPost && !imageFile) {
+      alert('Image is required');
+      return;
+    }
+
     try {
-      if (editingPost) {
-        await postAPI.update(editingPost._id, formData);
-      } else {
-        await postAPI.create(formData);
+      const submitData = new FormData();
+      submitData.append('title', formData.title);
+      submitData.append('slug', formData.slug);
+      submitData.append('content', formData.content);
+      submitData.append('author', formData.author);
+      
+      if (imageFile) {
+        submitData.append('image', imageFile);
       }
+
+      if (editingPost) {
+        await postAPI.update(editingPost._id, submitData);
+      } else {
+        await postAPI.create(submitData);
+      }
+      
       setShowForm(false);
       setEditingPost(null);
       setFormData({ title: '', slug: '', content: '', author: '' });
+      setImageFile(null);
+      setImagePreview(null);
       loadPosts();
     } catch (error) {
       console.error('Error saving post:', error);
+      alert(error.response?.data?.error || 'Error saving post');
     }
   };
 
@@ -62,6 +101,8 @@ function Posts() {
       content: post.content,
       author: post.author._id || post.author
     });
+    setImageFile(null);
+    setImagePreview(post.image ? `http://localhost:5000/uploads/posts/${post.image}` : null);
     setShowForm(true);
   };
 
@@ -108,11 +149,13 @@ function Posts() {
           setShowForm(true);
           setEditingPost(null);
           setFormData({ title: '', slug: '', content: '', author: '' });
+          setImageFile(null);
+          setImagePreview(null);
         }}>Add Post</button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="form">
+        <form onSubmit={handleSubmit} className="form" encType="multipart/form-data">
           <input
             type="text"
             placeholder="Title"
@@ -148,11 +191,27 @@ function Posts() {
             isClearable
             isSearchable
           />
+          <div className="form-group">
+            <label>Image {!editingPost && '(Required)'}</label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/jpg"
+              onChange={handleImageChange}
+              required={!editingPost}
+            />
+            {imagePreview && (
+              <div className="image-preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+          </div>
           <div className="form-actions">
             <button type="submit">{editingPost ? 'Update' : 'Create'}</button>
             <button type="button" onClick={() => {
               setShowForm(false);
               setEditingPost(null);
+              setImageFile(null);
+              setImagePreview(null);
             }}>Cancel</button>
           </div>
         </form>
@@ -161,6 +220,7 @@ function Posts() {
       <table className="table">
         <thead>
           <tr>
+            <th>Image</th>
             <th>Title</th>
             <th>Slug</th>
             <th>Author</th>
@@ -173,6 +233,17 @@ function Posts() {
         <tbody>
           {posts.map(post => (
             <tr key={post._id}>
+              <td>
+                {post.image ? (
+                  <img 
+                    src={`http://localhost:5000/uploads/posts/${post.image}`} 
+                    alt={post.title}
+                    className="post-image-thumbnail"
+                  />
+                ) : (
+                  <span>No Image</span>
+                )}
+              </td>
               <td>{post.title}</td>
               <td>{post.slug}</td>
               <td>{post.author?.name || 'N/A'}</td>

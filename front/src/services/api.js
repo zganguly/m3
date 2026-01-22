@@ -18,8 +18,12 @@ export const postAPI = {
   getAll: (page, search) => api.get('/posts', { params: { page, search } }),
   getAllActive: () => api.get('/posts/allActive'),
   getById: (id) => api.get(`/posts/${id}`),
-  create: (data) => api.post('/posts', data),
-  update: (id, data) => api.put(`/posts/${id}`, data),
+  create: (formData) => api.post('/posts', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  update: (id, formData) => api.put(`/posts/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
   delete: (id) => api.delete(`/posts/${id}`),
   toggleStatus: (id) => api.patch(`/posts/${id}/toggle-status`)
 };

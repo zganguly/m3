@@ -33,6 +33,10 @@ const postSchema = new mongoose.Schema({
   createdByName: {
     type: String,
     default: null
+  },
+  image: {
+    type: String,
+    default: null
   }
 }, {
   timestamps: true
