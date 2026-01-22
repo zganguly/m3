@@ -32,3 +32,7 @@ export const commentAPI = {
   delete: (id) => api.delete(`/comments/${id}`),
   toggleStatus: (id) => api.patch(`/comments/${id}/toggle-status`)
 };
+
+export const dashboardAPI = {
+  getStats: () => api.get('/dashboard')
+};
